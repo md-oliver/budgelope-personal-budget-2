@@ -46,12 +46,16 @@ const createNewBugetEnvelope = (title, budgetAllocation) => {
 };
 
 const getEnvelopeById = (id) => {
-  if (!isNaN(parseInt(id)) && isFinite(id)) {
+  if (isNaN(parseFloat(id)) && !isFinite(id)) {
+    return null;
+  } else {
     id = Number(id);
-  } else return null;
+    const envelope = allBudgets.find((budget) => budget.id === id);
+    if (envelope !== undefined) return envelope;
+    else return null;
+  }
 
-  const envelope = allBudgets.filter((budget) => budget.id === id)[0];
-  return envelope;
+  //
 };
 
 allBudgets = new Array(5).fill(0).map(createTempData);

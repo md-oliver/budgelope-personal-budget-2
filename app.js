@@ -22,16 +22,18 @@ app.get("/envelopes", (req, res, next) => {
       "No budgets set. Create a new envelope to help track your budgets"
     );
   } else {
-    res.send(getAllFromDatabase());
+    res.status(200).send(getAllFromDatabase());
   }
 });
 
-app.get("/envelopes/:id", (req, res, next) => {
+app.get("/envelope/:id", (req, res, next) => {
   const envelopeId = Number(req.params.id);
 
-  if (getEnvelopeById(envelopeId) !== null) {
+  if (getEnvelopeById(envelopeId) === null) {
+    res.status(404).send("Can't find the requested envelope");
+  } else {
     const envelope = getEnvelopeById(envelopeId);
-    res.send(envelope);
+    res.status(200).send(envelope);
   }
 });
 
