@@ -1,22 +1,26 @@
 import express from "express";
 import bodyParser from "body-parser";
+import envelopeRouter from "./server/envelopeApi.js";
 import {
   getAllFromDatabase,
-  createNewBugetEnvelope,
   hasAnyBudgets,
+  removeFromDatabaseById,
   getEnvelopeById,
+  createEnvelope,
+  addToDatabase,
 } from "./public/data.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+app.use("/envelopes", envelopeRouter);
 
 app.get("/", (req, res, next) => {
   res.send("<h1>Hello World!</h1>");
 });
 
-app.get("/envelopes", (req, res, next) => {
+envelopeRouter.get("/envelopes", (req, res, next) => {
   if (!hasAnyBudgets()) {
     res.send(
       "No budgets set. Create a new envelope to help track your budgets"
@@ -26,7 +30,7 @@ app.get("/envelopes", (req, res, next) => {
   }
 });
 
-app.get("/envelope/:id", (req, res, next) => {
+envelopeRouter.get("/:id", (req, res, next) => {
   const envelopeId = Number(req.params.id);
 
   if (getEnvelopeById(envelopeId) === null) {
@@ -34,6 +38,21 @@ app.get("/envelope/:id", (req, res, next) => {
   } else {
     const envelope = getEnvelopeById(envelopeId);
     res.status(200).send(envelope);
+  }
+});
+
+envelopeRouter.post("/", (req, res, next) => {
+  const envBody = req.body;
+  const envelope = addToDatabase(createEnvelope(envBody.title, envBody.budget));
+  res.status(201).send(envelope);
+});
+
+envelopeRouter.delete("/:id", (req, res, next) => {
+  const id = Number(req.params.id);
+  if (removeFromDatabaseById(id)) {
+    res.status(204).send("Removed envelope successfully");
+  } else {
+    res.status(404).send("Can't find the requested envelope");
   }
 });
 
