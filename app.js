@@ -64,7 +64,7 @@ envelopeRouter.put("/:id", (req, res, next) => {
         if (updatedEnvelope !== null) {
             res.status(200).send(updatedEnvelope);
         } else {
-            res.status(400).send("Bad data, unable to make the transaction");
+            res.status(400).send("Bad data, unable to make this transaction");
         }
     } else {
         res.status(404).send("Unable to find the requested envelope");
@@ -89,6 +89,39 @@ envelopeRouter.post("/:id", (req, res, next) => {
         }
     } else {
         res.status(404).send("Unable to find the requested envelope");
+    }
+});
+
+envelopeRouter.post("/:fromId/:toId", (req, res, next) => {
+    const transfer = req.body;
+    const sourceEnvelope = getEnvelopeById(Number(req.params.fromId));
+    const destinationEnvelope = getEnvelopeById(Number(req.params.toId));
+
+    if ((sourceEnvelope !== null) & (destinationEnvelope !== null)) {
+        if (sourceEnvelope === destinationEnvelope)
+            res.status(400).send(
+                "Cannot make a transfer to the same as the destination"
+            );
+
+        if (transfer && sourceEnvelope.budget >= transfer.amount) {
+            if (
+                !isNaN(parseFloat(transfer.amount)) &&
+                isFinite(transfer.amount)
+            ) {
+                sourceEnvelope.budget -= Number(transfer.amount);
+                destinationEnvelope.budget += Number(transfer.amount);
+                res.status(200).send({
+                    withdrawal: sourceEnvelope,
+                    transfer: destinationEnvelope,
+                });
+            } else {
+                res.status(400).send("Transfer amount must be a number type");
+            }
+        } else {
+            res.status(400).send("Bad data, unable to make this transaction");
+        }
+    } else {
+        res.status(404).send("Can't find the requested envelope/s");
     }
 });
 
