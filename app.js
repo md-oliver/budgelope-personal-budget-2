@@ -8,6 +8,8 @@ import {
     getEnvelopeById,
     createEnvelope,
     addToDatabase,
+    editEnvelopeById,
+    withdrawFundsFromEnvelopeById,
 } from "./public/data.js";
 
 const app = express();
@@ -48,6 +50,46 @@ envelopeRouter.post("/", (req, res, next) => {
         createEnvelope(envBody.title, envBody.budget)
     );
     res.status(201).send(envelope);
+});
+
+envelopeRouter.put("/:id", (req, res, next) => {
+    const withdrawEnvelope = req.body;
+    const requestedEnvelope = getEnvelopeById(Number(req.params.id));
+
+    if (requestedEnvelope !== null) {
+        const updatedEnvelope = withdrawFundsFromEnvelopeById(
+            requestedEnvelope.id,
+            withdrawEnvelope.budget
+        );
+        if (updatedEnvelope !== null) {
+            res.status(200).send(updatedEnvelope);
+        } else {
+            res.status(400).send("Bad data, unable to make the transaction");
+        }
+    } else {
+        res.status(404).send("Unable to find the requested envelope");
+    }
+});
+
+envelopeRouter.post("/:id", (req, res, next) => {
+    const pendingEnvelope = req.body;
+    const requestedEnvelope = getEnvelopeById(Number(req.params.id));
+
+    if (requestedEnvelope !== null) {
+        pendingEnvelope.id = Number(req.params.id);
+        const updatedEnvelope = editEnvelopeById(
+            pendingEnvelope.id,
+            pendingEnvelope
+        );
+
+        if (updatedEnvelope !== null) {
+            res.status(200).send(updatedEnvelope);
+        } else {
+            res.status(400).send("Unable to make the update to the envelope");
+        }
+    } else {
+        res.status(404).send("Unable to find the requested envelope");
+    }
 });
 
 envelopeRouter.delete("/:id", (req, res, next) => {

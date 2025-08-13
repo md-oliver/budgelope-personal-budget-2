@@ -89,13 +89,47 @@ const getEnvelopeById = (id) => {
     }
 };
 
+const withdrawFundsFromEnvelopeById = (id, withdrawelAmount) => {
+    const oldEnvelope = getEnvelopeById(id);
+    const index = allBudgets.findIndex(
+        (envelope) => envelope.id === oldEnvelope.id
+    );
+    if (index !== undefined) {
+        if (withdrawelAmount <= oldEnvelope.budget) {
+            oldEnvelope.budget -= withdrawelAmount;
+            allBudgets[index] = oldEnvelope;
+            return allBudgets[index];
+        } else {
+            throw new Error("You have insificient funds for the transaction.");
+        }
+    } else {
+        return null;
+    }
+};
+
+const editEnvelopeById = (id, updatedEnvelope) => {
+    const oldEnvelope = getEnvelopeById(id);
+    const index = allBudgets.findIndex(
+        (envelope) => envelope.id === oldEnvelope.id
+    );
+    if (index !== undefined && verifyEnvelopeData(updatedEnvelope)) {
+        allBudgets[index] = updatedEnvelope;
+        return allBudgets[index];
+    } else {
+        return null;
+    }
+};
+
 allBudgets = new Array(5).fill(0).map(createTempData);
 
 export {
     createEnvelope,
+    verifyEnvelopeData,
     getAllFromDatabase,
     removeFromDatabaseById,
     addToDatabase,
     hasAnyBudgets,
     getEnvelopeById,
+    withdrawFundsFromEnvelopeById,
+    editEnvelopeById,
 };
