@@ -103,16 +103,3 @@ NOTE: There may be some functions from the **public/db.js** file left out in thi
 ### Custom Route
 
 -   There is a custom `envelope` route to clean up some of the long route paths in `app.js`
-
-## Testing
-
-A testing suite has been provided for you, checking for all essential functionality and
-edge cases.
-
-To run these tests, first open the root project directory in your terminal. Then run `npm install` to install all necessary testing dependencies (you will only need to do this step once).
-
-Finally, run `npm run test`. You will see a list of tests that ran with information
-about whether or not each test passed. After this list, you will see more specific output
-about why each failing test failed. While they are open in a terminal window, these tests will re-run every time you save server files. If you want to quit the testing loop, use `Ctrl + C`. If you only want to run the tests once, you can run the `mocha` command in the terminal from your project root directory.
-
-As you implement functionality, run the tests to ensure you are implementing your routes and middleware correctly. The tests will additionally help you identify edge cases that you may not have anticipated when first writing your routes. You should also test the functionality on the frontend to make sure that things are working as intended. Feel free to add logging middleware to your server, it will help with debugging!
