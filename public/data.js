@@ -1,8 +1,10 @@
+// global iterator for every envelope created
 let idIterator = 0;
 
+// Verify if the data received for the envelope is correct and valid
 const verifyEnvelopeData = (envelope) => {
-    envelope.title = envelope.title || "";
-    envelope.budget = envelope.budget || 0;
+    // envelope.title = envelope.title || "";
+    // envelope.budget = envelope.budget || 0;
 
     if (typeof envelope.title !== "string")
         throw new Error("Title needs to be a string type");
@@ -13,6 +15,7 @@ const verifyEnvelopeData = (envelope) => {
     return true;
 };
 
+// Create a new envelope
 const createEnvelope = (title, budget) => {
     return {
         id: ++idIterator,
@@ -21,14 +24,17 @@ const createEnvelope = (title, budget) => {
     };
 };
 
+// Main array that holds all the envelopes
 let allBudgets = [];
 
-let totalBudget = () => {
+// Total budget calculation of all the envelopes budgets in the array
+const totalBudget = () => {
     return allBudgets.reduce((accumulator, reducer) => {
         return (accumulator += reducer.budget);
     }, 0);
 };
 
+// Create random dummy data
 const createTempData = () => {
     let defaultCategories = [
         "groceries",
@@ -50,14 +56,17 @@ const createTempData = () => {
     return envelope;
 };
 
+// Check for if the array is empty
 const hasAnyBudgets = () => {
     return allBudgets.length > 0;
 };
 
+// Retrieve all data in the array
 const getAllFromDatabase = () => {
     return allBudgets;
 };
 
+// Add a new envelope into the array database
 const addToDatabase = (instance) => {
     if (verifyEnvelopeData(instance)) {
         allBudgets.push(instance);
@@ -65,6 +74,7 @@ const addToDatabase = (instance) => {
     return allBudgets[allBudgets.length - 1];
 };
 
+// Remove an envelope from the database by id
 const removeFromDatabaseById = (id) => {
     if (isNaN(parseFloat(id)) && !isFinite(id)) {
         return null;
@@ -78,6 +88,7 @@ const removeFromDatabaseById = (id) => {
     }
 };
 
+// Retrieve the envelope by Id
 const getEnvelopeById = (id) => {
     if (isNaN(parseFloat(id)) && !isFinite(id)) {
         return null;
@@ -89,6 +100,7 @@ const getEnvelopeById = (id) => {
     }
 };
 
+// Make a withdrawel from a a specific envelope by id
 const withdrawFundsFromEnvelopeById = (id, withdrawelAmount) => {
     const oldEnvelope = getEnvelopeById(id);
     const index = allBudgets.findIndex(
@@ -100,13 +112,14 @@ const withdrawFundsFromEnvelopeById = (id, withdrawelAmount) => {
             allBudgets[index] = oldEnvelope;
             return allBudgets[index];
         } else {
-            throw new Error("You have insificient funds for the transaction.");
+            throw new Error("You have insufficient funds for the transaction.");
         }
     } else {
         return null;
     }
 };
 
+// Make a full edit of an envelope by id and update it in the array
 const editEnvelopeById = (id, updatedEnvelope) => {
     const oldEnvelope = getEnvelopeById(id);
     const index = allBudgets.findIndex(
@@ -120,6 +133,7 @@ const editEnvelopeById = (id, updatedEnvelope) => {
     }
 };
 
+// Mock data for testing
 allBudgets = new Array(5).fill(0).map(createTempData);
 
 export {
