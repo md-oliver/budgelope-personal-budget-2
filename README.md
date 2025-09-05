@@ -39,6 +39,7 @@ Clone the project in a working folder of your choosing. You'll need to run some 
         -   For this route, the request body should at least contain an 'amount' and its numerical value eg: `{ amount: 250 }`.
         -   POST to make a transfer between the source (fromId) envelope, to the destination (toId) envelope. The schema discussed below
             -   Returns a new object with the details of the transaction in the format of a new schema:
+            ```
             {
                 "withdrawal": {
                 "id": 2,
@@ -50,6 +51,7 @@ Clone the project in a working folder of your choosing. You'll need to run some 
                 "title": "groceries",
                 "budget": 1750
             }
+            ```
             -   Returns a 400 with a message if invalid or 404 not found
 
 For all PUT and POST routes, request bodies will ignore the `id` property to keep data integrity. All ID properties for the envelopes are auto-generated.
