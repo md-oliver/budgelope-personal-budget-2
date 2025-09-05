@@ -16,30 +16,19 @@ Clone the project in a working folder of your choosing, you'll need to run some 
 
 #### Routes
 
--   `/envelopes`
-    -   GET retrieves all budget envelopes in an array.
-        -   Returns the array of all envelopes
-        -   If empty, displays a message
-    -   POST to create a new envelope and save it to the database.
-        -   Returns the newly posted envelope on success
-        -   Throws an error if the data is invalid
-    -   POST `/:id` for specific envelope by ID, updating the whole envelope
-        -   Returns the newly posted envelope on success
-        -   Throws an error if the data is invalid
-    -   GET `/:id` to get a single envelope by id.
-        -   Returns the envelope by Id
-        -   Returns a 400 with message if invalid or 404 not found
-    -   PUT `/:id` to withdraw from the single envelope
-        -   Returns the envelope by id that the transaction was made from
-        -   Returns a 400 with message if invalid or 404 not found
-    -   DELETE `/:id` to delete a single envelope by id.
-        -   Returns a 204 with message if successful
-        -   Returns a 400 with message if invalid or 404 not found
-    -   `/:fromId/:toId`
-        -   For this route, the request body should at least contain an 'amount' and its numerical value eg: `{ amount: 250 }`.
-        -   POST to make a transfer between the source (fromId) envelope, to the destination (toId) envelope. Schema discussed below
-            -   Returns a new object with the details of the transaction
-            -   Returns a 400 with message if invalid or 404 not found
+-   `/envelopes` - GET retrieves all budget envelopes in an array. - Returns the array of all envelopes - If empty, displays a message - POST to create a new envelope and save it to the database. - Returns the newly posted envelope on success - Throws an error if the data is invalid - POST `/:id` for specific envelope by ID, updating the whole envelope - Returns the newly posted envelope on success - Throws an error if the data is invalid - GET `/:id` to get a single envelope by id. - Returns the envelope by Id - Returns a 400 with message if invalid or 404 not found - PUT `/:id` to withdraw from the single envelope - Returns the envelope by id that the transaction was made from - Returns a 400 with message if invalid or 404 not found - DELETE `/:id` to delete a single envelope by id. - Returns a 204 with message if successful - Returns a 400 with message if invalid or 404 not found - `/:fromId/:toId` - For this route, the request body should at least contain an 'amount' and its numerical value eg: `{ amount: 250 }`. - POST to make a transfer between the source (fromId) envelope, to the destination (toId) envelope. Schema discussed below - Returns a new object with the details of the transaction in format of a new schema:
+    {
+    "withdrawal": {
+    "id": 2,
+    "title": "hobbies",
+    "budget": 500
+    },
+    "transfer": {
+    "id": 1,
+    "title": "groceries",
+    "budget": 1750
+    }
+    } - Returns a 400 with message if invalid or 404 not found
 
 For all PUT and POST routes, request bodies will ignore the `id` property to keep data integrity. All id properties for the envelopes are auto-generated.
 For the PUT requst, the `title` will also be ignored, as the data is made on the `budget` property.
