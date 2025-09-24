@@ -1,6 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import envelopeRouter from "./server/envelopeApi.js";
+import pg from "pg";
+import env from "dotenv";
 import {
     getAllFromDatabase,
     hasAnyBudgets,
@@ -14,11 +16,31 @@ import {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+env.config();
+
+const db = new pg.Pool({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT,
+});
 
 // Body parsing middleware for json data
 app.use(bodyParser.json());
 // New route middleware for simplification
 app.use("/envelopes", envelopeRouter);
+
+// ID Normalize middleware
+const normalizeID = (req, res, next) => {
+    const envelopeId = Number(req.params.id);
+    if (isNaN(parseFloat(envelopeId)) && !isFinite(envelopeId)) {
+        res.status(400).send("Unable to retrieve the envlope ID");
+    } else {
+        req.envelopeId = envelopeId;
+        next();
+    }
+};
 
 // Default route, working
 app.get("/", (req, res, next) => {
@@ -26,31 +48,41 @@ app.get("/", (req, res, next) => {
 });
 
 // Default envelope route
-envelopeRouter.get("/", (req, res, next) => {
-    if (!hasAnyBudgets()) {
-        res.send(
-            "No budgets set. Create a new envelope to help track your budgets"
-        );
-    } else {
-        res.status(200).send(getAllFromDatabase());
-    }
+envelopeRouter.get("/", async (req, res) => {
+    const query = "SELECT * FROM envelopes;";
+
+    db.query(query, (err, response) => {
+        if (err) {
+            console.error("Error executing query", err.stack);
+        } else {
+            res.send(response.rows);
+        }
+    });
 });
 
-// Get envelope by id route
-envelopeRouter.get("/:id", (req, res, next) => {
-    const envelopeId = Number(req.params.id);
+//  Get request for individual Envelope with matching ID
+envelopeRouter.get("/:id", normalizeID, async (req, res, next) => {
+    const envelopeId = req.envelopeId;
 
-    if (getEnvelopeById(envelopeId) === null) {
-        res.status(404).send("Can't find the requested envelope");
-    } else {
-        const envelope = getEnvelopeById(envelopeId);
-        res.status(200).send(envelope);
+    try {
+        const query = "SELECT * FROM envelopes WHERE id = $1";
+        const result = await db.query(query, [envelopeId]);
+
+        if (result.rowCount > 0) {
+            res.send(result.rows);
+        } else {
+            res.status(404).send(`No envelope with id ${envelopeId}`);
+        }
+    } catch (error) {
+        console.log("Error occured", error.stack);
     }
 });
 
 // Post route to the default envelope route
 envelopeRouter.post("/", (req, res, next) => {
     const envBody = req.body;
+
+    // const query = "INSERT INTO envelopes (title, budget) VALUES ($1, $2)";
 
     const envelope = addToDatabase(
         createEnvelope(envBody.title, envBody.budget)
@@ -59,45 +91,76 @@ envelopeRouter.post("/", (req, res, next) => {
 });
 
 // Withdrawel route for making withdrawels from a specific envelope by ID
-envelopeRouter.put("/:id", (req, res, next) => {
-    const withdrawEnvelope = req.body;
-    const requestedEnvelope = getEnvelopeById(Number(req.params.id));
+// envelopeRouter.put("/:id", (req, res, next) => {
+//     const withdrawEnvelope = req.body;
+//     const requestedEnvelope = getEnvelopeById(Number(req.params.id));
 
-    if (requestedEnvelope !== null) {
-        const updatedEnvelope = withdrawFundsFromEnvelopeById(
-            requestedEnvelope.id,
-            withdrawEnvelope.budget
-        );
-        if (updatedEnvelope !== null) {
-            res.status(200).send(updatedEnvelope);
-        } else {
-            res.status(400).send("Bad data, unable to make this transaction");
-        }
-    } else {
-        res.status(404).send("Unable to find the requested envelope");
-    }
-});
+//     if (requestedEnvelope !== null) {
+//         const updatedEnvelope = withdrawFundsFromEnvelopeById(
+//             requestedEnvelope.id,
+//             withdrawEnvelope.budget
+//         );
+//         if (updatedEnvelope !== null) {
+//             res.status(200).send(updatedEnvelope);
+//         } else {
+//             res.status(400).send("Bad data, unable to make this transaction");
+//         }
+//     } else {
+//         res.status(404).send("Unable to find the requested envelope");
+//     }
+// });
 
 // Post route for specific envelope by ID, updating the whole envelope
-envelopeRouter.post("/:id", (req, res, next) => {
-    const pendingEnvelope = req.body;
-    const requestedEnvelope = getEnvelopeById(Number(req.params.id));
+// envelopeRouter.post("/:id", (req, res, next) => {
+//     const pendingEnvelope = req.body;
+//     const requestedEnvelope = getEnvelopeById(Number(req.params.id));
 
-    if (requestedEnvelope !== null) {
-        pendingEnvelope.id = Number(req.params.id);
-        const updatedEnvelope = editEnvelopeById(
-            pendingEnvelope.id,
-            pendingEnvelope
-        );
+//     if (requestedEnvelope !== null) {
+//         pendingEnvelope.id = Number(req.params.id);
+//         const updatedEnvelope = editEnvelopeById(
+//             pendingEnvelope.id,
+//             pendingEnvelope
+//         );
 
-        if (updatedEnvelope !== null) {
-            res.status(200).send(updatedEnvelope);
-        } else {
-            res.status(400).send("Unable to make the update to the envelope");
+//         if (updatedEnvelope !== null) {
+//             res.status(200).send(updatedEnvelope);
+//         } else {
+//             res.status(400).send("Unable to make the update to the envelope");
+//         }
+//     } else {
+//         res.status(404).send("Unable to find the requested envelope");
+//     }
+// });
+
+// Post route for specific envelope by ID, updating the whole envelope
+envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
+    const withdrawEnvelope = req.body;
+    const requestedEnvelopeID = req.envelopeId;
+
+    const query = "UPDATE envelopes SET title = $1, budget = $2 WHERE id = $3";
+
+    db.query(
+        query,
+        [
+            withdrawEnvelope.title || "default",
+            withdrawEnvelope.budget || 0,
+            requestedEnvelopeID,
+        ],
+        (err, response) => {
+            if (err) {
+                console.log(err.stack);
+                res.status(500).send("An error has occured");
+            } else {
+                if (response.rowCount > 0) {
+                    res.status(200).send("Updated Successfully");
+                } else {
+                    res.status(404).send(
+                        "Unable to find envelope with the specified ID"
+                    );
+                }
+            }
         }
-    } else {
-        res.status(404).send("Unable to find the requested envelope");
-    }
+    );
 });
 
 // Transfer route, requires an id of a source envelope id (fromId), and a destination envelope Id (toId)
