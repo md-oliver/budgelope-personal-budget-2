@@ -74,6 +74,7 @@ envelopeRouter.get("/", async (req, res) => {
     }
 });
 
+// Get route for envelope by matching ID
 envelopeRouter.get("/:id", normalizeID, async (req, res, next) => {
     const envelopeId = req.envelopeId;
     const query = "SELECT * FROM envelopes WHERE id = $1";
@@ -149,28 +150,6 @@ envelopeRouter.post("/", async (req, res, next) => {
 // });
 
 // Post route for specific envelope by ID, updating the whole envelope
-// envelopeRouter.post("/:id", (req, res, next) => {
-//     const pendingEnvelope = req.body;
-//     const requestedEnvelope = getEnvelopeById(Number(req.params.id));
-
-//     if (requestedEnvelope !== null) {
-//         pendingEnvelope.id = Number(req.params.id);
-//         const updatedEnvelope = editEnvelopeById(
-//             pendingEnvelope.id,
-//             pendingEnvelope
-//         );
-
-//         if (updatedEnvelope !== null) {
-//             res.status(200).send(updatedEnvelope);
-//         } else {
-//             res.status(400).send("Unable to make the update to the envelope");
-//         }
-//     } else {
-//         res.status(404).send("Unable to find the requested envelope");
-//     }
-// });
-
-// Post route for specific envelope by ID, updating the whole envelope
 envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
     const withdrawEnvelope = req.body;
     const requestedEnvelopeID = req.envelopeId;
@@ -236,12 +215,29 @@ envelopeRouter.post("/:fromId/:toId", (req, res, next) => {
 });
 
 // Remove route for removing a specific envelope by id
-envelopeRouter.delete("/:id", (req, res, next) => {
-    const id = Number(req.params.id);
-    if (removeFromDatabaseById(id)) {
-        res.status(204).send("Removed envelope successfully");
-    } else {
-        res.status(404).send("Can't find the requested envelope");
+envelopeRouter.delete("/:id", normalizeID, async (req, res, next) => {
+    const envelopeId = req.envelopeId;
+
+    try {
+        const getQuery = "SELECT * FROM envelopes WHERE id = $1;";
+        const getresult = await db.query(getQuery, [envelopeId]);
+
+        if (getresult.rowCount < 1) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "No records found with matching ID",
+                data: null,
+            });
+        }
+
+        const deleteQuery = "DELETE FROM envelopes WHERE id = $1;";
+        await db.query(deleteQuery, [envelopeId]);
+        res.sendStatus(204);
+    } catch (err) {
+        return res.status(500).send({
+            status: "Failed",
+            error: err.message,
+        });
     }
 });
 
