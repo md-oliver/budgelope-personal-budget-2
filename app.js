@@ -12,7 +12,9 @@ import {
     addToDatabase,
     editEnvelopeById,
     withdrawFundsFromEnvelopeById,
+    verifyEnvelopeData,
 } from "./public/data.js";
+import { stat } from "fs";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,59 +37,95 @@ app.use("/envelopes", envelopeRouter);
 const normalizeID = (req, res, next) => {
     const envelopeId = Number(req.params.id);
     if (isNaN(parseFloat(envelopeId)) && !isFinite(envelopeId)) {
-        res.status(400).send("Unable to retrieve the envlope ID");
+        res.status(400).send({
+            status: "Failed",
+            message: "Bad request. Unable to find matching ID",
+            data: null,
+        });
     } else {
         req.envelopeId = envelopeId;
         next();
     }
 };
 
-// Default route, working
-app.get("/", (req, res, next) => {
-    res.send("<h1>Hello World!</h1>");
-});
-
 // Default envelope route
 envelopeRouter.get("/", async (req, res) => {
-    const query = "SELECT * FROM envelopes;";
-
-    db.query(query, (err, response) => {
-        if (err) {
-            console.error("Error executing query", err.stack);
-        } else {
-            res.send(response.rows);
-        }
-    });
-});
-
-//  Get request for individual Envelope with matching ID
-envelopeRouter.get("/:id", normalizeID, async (req, res, next) => {
-    const envelopeId = req.envelopeId;
+    const query = "SELECT * FROM envelopes ORDER BY id ASC;";
 
     try {
-        const query = "SELECT * FROM envelopes WHERE id = $1";
+        const result = await db.query(query);
+
+        if (result.rowCount < 1) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "No records found",
+                data: null,
+            });
+        }
+        res.status(200).send({
+            status: "Success",
+            message: "Envelopes received",
+            data: result.rows,
+        });
+    } catch (err) {
+        return res.status(500).send({
+            error: err.message,
+        });
+    }
+});
+
+envelopeRouter.get("/:id", normalizeID, async (req, res, next) => {
+    const envelopeId = req.envelopeId;
+    const query = "SELECT * FROM envelopes WHERE id = $1";
+
+    try {
         const result = await db.query(query, [envelopeId]);
 
-        if (result.rowCount > 0) {
-            res.send(result.rows);
-        } else {
-            res.status(404).send(`No envelope with id ${envelopeId}`);
+        if (result.rowCount < 1) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "No records found",
+                data: null,
+            });
         }
+
+        res.status(200).send({
+            status: "Success",
+            message: "Envelope received",
+            data: result.rows[0],
+        });
     } catch (error) {
-        console.log("Error occured", error.stack);
+        return res.status(500).send({
+            status: "Failed",
+            error: err.message,
+        });
     }
 });
 
 // Post route to the default envelope route
-envelopeRouter.post("/", (req, res, next) => {
-    const envBody = req.body;
+envelopeRouter.post("/", async (req, res, next) => {
+    const { title, budget } = req.body;
 
-    // const query = "INSERT INTO envelopes (title, budget) VALUES ($1, $2)";
+    try {
+        const temporaryEnvelope = createEnvelope(title, budget);
 
-    const envelope = addToDatabase(
-        createEnvelope(envBody.title, envBody.budget)
-    );
-    res.status(201).send(envelope);
+        if (verifyEnvelopeData(temporaryEnvelope)) {
+            const query =
+                "INSERT INTO envelopes (title, budget) VALUES ($1, $2) RETURNING *;";
+            const result = await db.query(query, [title, budget]);
+
+            res.status(201).send({
+                status: "Success",
+                message: "Envelope created",
+                data: result.rows[0],
+            });
+        }
+    } catch (err) {
+        return res.status(500).send({
+            status: "Failed",
+            error: err.message,
+        });
+    }
 });
 
 // Withdrawel route for making withdrawels from a specific envelope by ID
