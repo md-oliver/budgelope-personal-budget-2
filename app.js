@@ -3,17 +3,7 @@ import bodyParser from "body-parser";
 import envelopeRouter from "./server/envelopeApi.js";
 import pg from "pg";
 import env from "dotenv";
-import {
-    getAllFromDatabase,
-    hasAnyBudgets,
-    removeFromDatabaseById,
-    getEnvelopeById,
-    createEnvelope,
-    addToDatabase,
-    editEnvelopeById,
-    withdrawFundsFromEnvelopeById,
-    verifyEnvelopeData,
-} from "./public/data.js";
+import { createEnvelope, verifyEnvelopeData } from "./public/data.js";
 import { stat } from "fs";
 
 const app = express();
@@ -47,6 +37,65 @@ const normalizeID = (req, res, next) => {
         next();
     }
 };
+
+// Get all transactions:
+app.get("/transactions", async (req, res, next) => {
+    const query = "SELECT * FROM transactions;";
+    try {
+        const result = await db.query(query);
+
+        res.status(200).send({
+            status: "Success",
+            message: "Transactions received",
+            data: result.rows,
+        });
+    } catch (err) {
+        res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+});
+
+// Get all transactions:
+app.get("/transactions/:id", async (req, res, next) => {
+    const query = "SELECT * FROM transactions WHERE id = $1;";
+    const transactionId = Number(req.params.id);
+    try {
+        const result = await db.query(query, [transactionId]);
+
+        res.status(200).send({
+            status: "Success",
+            message: "Transactions received",
+            data: result.rows[0],
+        });
+    } catch (err) {
+        res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+});
+
+// Get all transactions:
+app.get("/transactions/envelopes/:envelopeId", async (req, res, next) => {
+    const query = "SELECT * FROM transactions WHERE envelope_id = $1;";
+    const envelopeId = Number(req.params.envelopeId);
+    try {
+        const result = await db.query(query, [envelopeId]);
+
+        res.status(200).send({
+            status: "Success",
+            message: "Transactions received",
+            data: result.rows,
+        });
+    } catch (err) {
+        res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+});
 
 // Default envelope route
 envelopeRouter.get("/", async (req, res) => {
@@ -130,87 +179,242 @@ envelopeRouter.post("/", async (req, res, next) => {
 });
 
 // Withdrawel route for making withdrawels from a specific envelope by ID
-// envelopeRouter.put("/:id", (req, res, next) => {
-//     const withdrawEnvelope = req.body;
-//     const requestedEnvelope = getEnvelopeById(Number(req.params.id));
+envelopeRouter.put("/:id", normalizeID, async (req, res, next) => {
+    const envelopeId = req.envelopeId;
+    const { title, amount } = req.body;
 
-//     if (requestedEnvelope !== null) {
-//         const updatedEnvelope = withdrawFundsFromEnvelopeById(
-//             requestedEnvelope.id,
-//             withdrawEnvelope.budget
-//         );
-//         if (updatedEnvelope !== null) {
-//             res.status(200).send(updatedEnvelope);
+    try {
+        const recordQuery = "SELECT budget FROM envelopes WHERE id = $1";
+        const recordResult = await db.query(recordQuery, [envelopeId]);
+
+        if (recordResult.rowCount < 1) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "No records found",
+                data: null,
+            });
+        }
+
+        await db.query("BEGIN");
+
+        const transactionAmount = Number.parseFloat(amount);
+        let envelopeBudget = Number.parseFloat(recordResult.rows[0].budget);
+
+        if (envelopeBudget >= transactionAmount) {
+            const date = new Date();
+            envelopeBudget -= transactionAmount;
+            const transactionQuery =
+                "INSERT INTO transactions(title, amount, date, envelope_id)VALUES($1, $2, $3, $4) RETURNING *";
+            const updateQuery =
+                "UPDATE envelopes SET budget = $1 WHERE id = $2;";
+
+            const transactionResult = await db.query(transactionQuery, [
+                title,
+                transactionAmount,
+                date,
+                envelopeId,
+            ]);
+            await db.query(updateQuery, [envelopeBudget, envelopeId]);
+            await db.query("COMMIT");
+
+            res.status(201).send({
+                status: "Success",
+                message: "Transaction Successful",
+                data: transactionResult.rows[0],
+            });
+        } else {
+            return res.status(400).send({
+                status: "Failed",
+                message: "Unable to make transacton: Insufficient funds",
+            });
+        }
+    } catch (err) {
+        await db.query("ROLLBACK");
+
+        return res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+});
+
+// Post route for specific envelope by ID, updating the whole envelope
+envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
+    const { title, budget } = req.body;
+    const requestedEnvelopeID = req.envelopeId;
+
+    try {
+        const getQuery = "SELECT * FROM envelopes WHERE id = $1;";
+        const getRecord = await db.query(getQuery, [requestedEnvelopeID]);
+
+        if (getRecord.rowCount < 1) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "No record found with matching ID",
+                data: null,
+            });
+        }
+
+        const updateQuery =
+            "UPDATE envelopes SET title = $1, budget = $2 WHERE id = $3 RETURNING *;";
+        const tempEnvelope = createEnvelope(title, budget);
+
+        if (verifyEnvelopeData(tempEnvelope)) {
+            const updateResult = await db.query(updateQuery, [
+                title,
+                budget,
+                requestedEnvelopeID,
+            ]);
+
+            if (updateResult.rowCount > 0) {
+                res.status(200).send({
+                    status: "Success",
+                    message: "Updated envelope successfully",
+                    data: updateResult.rows[0],
+                });
+            }
+        }
+    } catch (err) {
+        return res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
+    }
+});
+
+// Transfer route, requires an id of a source envelope id (fromId), and a destination envelope Id (toId)
+// envelopeRouter.post("/:fromId/:toId", (req, res, next) => {
+//     const transfer = req.body;
+//     const sourceEnvelope = getEnvelopeById(Number(req.params.fromId));
+//     const destinationEnvelope = getEnvelopeById(Number(req.params.toId));
+
+//     if ((sourceEnvelope !== null) & (destinationEnvelope !== null)) {
+//         if (sourceEnvelope === destinationEnvelope)
+//             res.status(400).send(
+//                 "Cannot make a transfer to the same as the destination"
+//             );
+
+//         if (transfer && sourceEnvelope.budget >= transfer.amount) {
+//             if (
+//                 !isNaN(parseFloat(transfer.amount)) &&
+//                 isFinite(transfer.amount)
+//             ) {
+//                 sourceEnvelope.budget -= Number(transfer.amount);
+//                 destinationEnvelope.budget += Number(transfer.amount);
+//                 res.status(200).send({
+//                     withdrawal: sourceEnvelope,
+//                     transfer: destinationEnvelope,
+//                 });
+//             } else {
+//                 res.status(400).send("Transfer amount must be a number type");
+//             }
 //         } else {
 //             res.status(400).send("Bad data, unable to make this transaction");
 //         }
 //     } else {
-//         res.status(404).send("Unable to find the requested envelope");
+//         res.status(404).send("Can't find the requested envelope/s");
 //     }
 // });
 
-// Post route for specific envelope by ID, updating the whole envelope
-envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
-    const withdrawEnvelope = req.body;
-    const requestedEnvelopeID = req.envelopeId;
-
-    const query = "UPDATE envelopes SET title = $1, budget = $2 WHERE id = $3";
-
-    db.query(
-        query,
-        [
-            withdrawEnvelope.title || "default",
-            withdrawEnvelope.budget || 0,
-            requestedEnvelopeID,
-        ],
-        (err, response) => {
-            if (err) {
-                console.log(err.stack);
-                res.status(500).send("An error has occured");
-            } else {
-                if (response.rowCount > 0) {
-                    res.status(200).send("Updated Successfully");
-                } else {
-                    res.status(404).send(
-                        "Unable to find envelope with the specified ID"
-                    );
-                }
-            }
-        }
-    );
-});
-
 // Transfer route, requires an id of a source envelope id (fromId), and a destination envelope Id (toId)
-envelopeRouter.post("/:fromId/:toId", (req, res, next) => {
-    const transfer = req.body;
-    const sourceEnvelope = getEnvelopeById(Number(req.params.fromId));
-    const destinationEnvelope = getEnvelopeById(Number(req.params.toId));
+envelopeRouter.post("/:fromId/:toId", async (req, res, next) => {
+    const { title, amount } = req.body;
+    const sourceEnvelopeId = parseInt(req.params.fromId);
+    const destinationEnvelopeId = parseInt(req.params.toId);
 
-    if ((sourceEnvelope !== null) & (destinationEnvelope !== null)) {
-        if (sourceEnvelope === destinationEnvelope)
-            res.status(400).send(
-                "Cannot make a transfer to the same as the destination"
-            );
+    try {
+        const selectQuery = "SELECT * FROM envelopes WHERE id = $1;";
 
-        if (transfer && sourceEnvelope.budget >= transfer.amount) {
-            if (
-                !isNaN(parseFloat(transfer.amount)) &&
-                isFinite(transfer.amount)
-            ) {
-                sourceEnvelope.budget -= Number(transfer.amount);
-                destinationEnvelope.budget += Number(transfer.amount);
-                res.status(200).send({
-                    withdrawal: sourceEnvelope,
-                    transfer: destinationEnvelope,
-                });
-            } else {
-                res.status(400).send("Transfer amount must be a number type");
-            }
-        } else {
-            res.status(400).send("Bad data, unable to make this transaction");
+        if (isNaN(sourceEnvelopeId) || isNaN(destinationEnvelopeId)) {
+            return res.status(404).send({
+                status: "Failed",
+                message: "Cannot find the requested envelope/s",
+                data: null,
+            });
         }
-    } else {
-        res.status(404).send("Can't find the requested envelope/s");
+
+        if (sourceEnvelopeId === destinationEnvelopeId) {
+            return res.status(400).send({
+                status: "Failed",
+                message:
+                    "Cannot make a transfer to the same as the destination",
+                data: null,
+            });
+        }
+
+        const sourceResult = await db.query(selectQuery, [sourceEnvelopeId]);
+        const destinationResult = await db.query(selectQuery, [
+            destinationEnvelopeId,
+        ]);
+
+        if (sourceResult.rowCount < 1 || destinationResult.rowCount < 1) {
+            return res.status(400).send({
+                status: "Failed",
+                message: "Cannot find the requested envelope/s",
+                data: null,
+            });
+        }
+
+        const transactionAmount = parseFloat(amount);
+        let withdrawelBudget = parseFloat(sourceResult.rows[0].budget);
+        let transferBudget = parseFloat(destinationResult.rows[0].budget);
+
+        if (withdrawelBudget >= transactionAmount) {
+            await db.query("BEGIN");
+
+            const date = new Date();
+            withdrawelBudget -= transactionAmount;
+            transferBudget += transactionAmount;
+
+            const transactionQuery =
+                "INSERT INTO transactions(title, amount, date, envelope_id)VALUES($1, $2, $3, $4) RETURNING *";
+            const updateQuery =
+                "UPDATE envelopes SET budget = $1 WHERE id = $2 RETURNING *";
+
+            await db.query(transactionQuery, [
+                title,
+                transactionAmount,
+                date,
+                sourceEnvelopeId,
+            ]);
+            await db.query(transactionQuery, [
+                title,
+                transactionAmount,
+                date,
+                destinationEnvelopeId,
+            ]);
+
+            const withdrawelResult = await db.query(updateQuery, [
+                withdrawelBudget,
+                sourceEnvelopeId,
+            ]);
+            const transferResult = await db.query(updateQuery, [
+                transferBudget,
+                destinationEnvelopeId,
+            ]);
+
+            await db.query("COMMIT");
+
+            res.status(200).send({
+                status: "Success",
+                message: "Transaction Successful",
+                data: {
+                    withdrawel: withdrawelResult.rows[0],
+                    transfer: transferResult.rows[0],
+                },
+            });
+        } else {
+            return res.status(500).send({
+                status: "Failed",
+                message: "Unable to make transacton: Insufficient funds",
+            });
+        }
+    } catch (err) {
+        await db.query("ROLLBACK");
+        return res.status(500).send({
+            status: "Failed",
+            message: err.message,
+        });
     }
 });
 
@@ -220,9 +424,9 @@ envelopeRouter.delete("/:id", normalizeID, async (req, res, next) => {
 
     try {
         const getQuery = "SELECT * FROM envelopes WHERE id = $1;";
-        const getresult = await db.query(getQuery, [envelopeId]);
+        const getResult = await db.query(getQuery, [envelopeId]);
 
-        if (getresult.rowCount < 1) {
+        if (getResult.rowCount < 1) {
             return res.status(404).send({
                 status: "Failed",
                 message: "No records found with matching ID",
