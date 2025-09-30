@@ -3,11 +3,13 @@ import bodyParser from "body-parser";
 import envelopeRouter from "./server/envelopeApi.js";
 import pg from "pg";
 import env from "dotenv";
-import { createEnvelope, verifyEnvelopeData } from "./public/data.js";
-import { stat } from "fs";
+import { createEnvelope, verifyEnvelopeData } from "./server/data.js";
+import methodOverride from "method-override";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.set("view engine", "ejs");
+
 env.config();
 
 const db = new pg.Pool({
@@ -18,11 +20,24 @@ const db = new pg.Pool({
     port: process.env.PG_PORT,
 });
 
+app.use(express.static("public"));
 // Body parsing middleware for json data
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(
+    methodOverride((req, res) => {
+        if (req.body && typeof req.body === "object" && "_method" in req.body) {
+            // look in urlencoded POST bodies and delete it
+            var method = req.body._method;
+            // console.log(method, req.body._method);
+            delete req.body._method;
+            return method;
+        }
+    })
+);
 // New route middleware for simplification
 app.use("/envelopes", envelopeRouter);
-
 // ID Normalize middleware
 const normalizeID = (req, res, next) => {
     const envelopeId = Number(req.params.id);
@@ -104,14 +119,7 @@ envelopeRouter.get("/", async (req, res) => {
     try {
         const result = await db.query(query);
 
-        if (result.rowCount < 1) {
-            return res.status(404).send({
-                status: "Failed",
-                message: "No records found",
-                data: null,
-            });
-        }
-        res.status(200).send({
+        res.status(200).render("index.ejs", {
             status: "Success",
             message: "Envelopes received",
             data: result.rows,
@@ -162,13 +170,9 @@ envelopeRouter.post("/", async (req, res, next) => {
         if (verifyEnvelopeData(temporaryEnvelope)) {
             const query =
                 "INSERT INTO envelopes (title, budget) VALUES ($1, $2) RETURNING *;";
-            const result = await db.query(query, [title, budget]);
+            await db.query(query, [title, budget]);
 
-            res.status(201).send({
-                status: "Success",
-                message: "Envelope created",
-                data: result.rows[0],
-            });
+            res.status(201).redirect("/envelopes");
         }
     } catch (err) {
         return res.status(500).send({
@@ -436,7 +440,9 @@ envelopeRouter.delete("/:id", normalizeID, async (req, res, next) => {
 
         const deleteQuery = "DELETE FROM envelopes WHERE id = $1;";
         await db.query(deleteQuery, [envelopeId]);
-        res.sendStatus(204);
+
+        res.status(204).redirect("/envelopes");
+        // res.sendStatus(204);
     } catch (err) {
         return res.status(500).send({
             status: "Failed",
