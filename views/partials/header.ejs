@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <link rel="stylesheet" href="styles/styles.css" />
+
+        <title>Budgelope - Budget Tracker</title>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <div id="home-logo-div">
+                    <a href="/envelopes"><h1>BudgElope</h1></a>
+                </div>
+
+                <button id="add-envelope" onclick="handler(false)">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="75"
+                        height="75"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 13h-5v5h-2v-5h-5v-2h5v-5h2v5h5v2z" />
+                    </svg>
+                </button>
+            </nav>
+        </header>
+        <form id="new-envelope-form" action="/envelopes" method="POST" hidden style="display: none;" inert>
+            <p>Create New Envelope</p>
+            <label for="title">Title: </label>
+            <input type="text" name="title" id="title" required />
+            <label for="budget">Budget: </label>
+            <input type="number" name="budget" id="budget" min="0" required />
+            <button type="submit" onclick="handler()">Create</button>
+        </form>
+        <script>
+            function handler() {
+                const newEnvelopeForm =
+                    document.getElementById("new-envelope-form");
+                const value = newEnvelopeForm.toggleAttribute("hidden");
+
+                if (value) {
+                    newEnvelopeForm.style.display = "none";
+                    newEnvelopeForm.setAttribute("inert", "");
+                } else {
+                    newEnvelopeForm.style.display = "flex";
+                    newEnvelopeForm.removeAttribute("inert");
+                }
+            }
+        </script>

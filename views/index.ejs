@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+<main>
+    <section id="all-envelopes">
+        <ul>
+            <% if(locals.data.length > 0) { %> <% for (let i = 0; i <
+            data.length; i++ ){ %>
+            <li>
+                <div class="envelope">
+                    <div class="data-fields">
+                        <p class="env-title"><%= data[i].title %></p>
+                        <p class="env-budget"><%= data[i].budget %></p>
+                    </div>
+                    <div class="env-btns">
+                        <a class="transfer-btn" href="#">
+                            <svg
+                                width="35"
+                                height="35"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill-rule="evenodd"
+                                clip-rule="evenodd">
+                                <path
+                                    d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12-12-5.377-12-12 5.377-12 12-12zm0 2c5.519 0 10 4.481 10 10s-4.481 10-10 10-10-4.481-10-10 4.481-10 10-10zm2 12v-3l5 4-5 4v-3h-9v-2h9zm-4-6v-3l-5 4 5 4v-3h9v-2h-9z" />
+                            </svg>
+                        </a>
+                        <a class="edit-btn" href="#"
+                            ><svg
+                                clip-rule="evenodd"
+                                fill-rule="evenodd"
+                                stroke-linejoin="round"
+                                stroke-miterlimit="2"
+                                viewBox="0 0 24 24"
+                                width="35"
+                                height="35"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="m14.776 18.689 7.012-7.012c.133-.133.217-.329.217-.532 0-.179-.065-.363-.218-.515l-2.423-2.415c-.144-.143-.333-.215-.522-.215s-.378.072-.523.215l-7.027 6.996c-.442 1.371-1.158 3.586-1.265 3.952-.125.433.199.834.573.834.41 0 .696-.099 4.176-1.308zm-2.258-2.392 1.17 1.171c-.704.232-1.275.418-1.729.566zm.968-1.154 5.356-5.331 1.347 1.342-5.346 5.347zm-4.486-1.393c0-.402-.356-.75-.75-.75-2.561 0-2.939 0-5.5 0-.394 0-.75.348-.75.75s.356.75.75.75h5.5c.394 0 .75-.348.75-.75zm5-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75z"
+                                    fill-rule="nonzero" />
+                            </svg>
+                        </a>
+                        <form
+                            action="/envelopes/<%=data[i].id %>"
+                            method="POST">
+                            <input
+                                type="hidden"
+                                name="_method"
+                                value="DELETE" />
+                            <button
+                                class="del-btn"
+                                type="submit"
+                                name="deleteItemId">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="35"
+                                    height="35"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5 15.538l-3.592-3.548 3.546-3.587-1.416-1.403-3.545 3.589-3.588-3.543-1.405 1.405 3.593 3.552-3.547 3.592 1.405 1.405 3.555-3.596 3.591 3.55 1.403-1.416z" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            <% } } else { %>
+            <li><p id="no-content-notice">* EMPTY *</p></li>
+            <%}%>
+        </ul>
+    </section>
+</main>
+<%- include('partials/footer') %>
