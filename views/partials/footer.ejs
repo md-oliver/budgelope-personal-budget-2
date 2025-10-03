@@ -1,5 +1,19 @@
         <footer>
             <small>Marc Damon Oliver © <%= new Date().getFullYear() %></small>
         </footer>
+        <script>
+             function enableForm(id) {
+                const formToEnable = document.getElementById(id);
+                const toggle = formToEnable.toggleAttribute("hidden");
+
+                if (toggle) {
+                    formToEnable.style.display = "none";
+                    formToEnable.setAttribute("inert", "");
+                } else {
+                    formToEnable.style.display = "flex";
+                    formToEnable.removeAttribute("inert");
+                }
+            }
+        </script>
     </body>
 </html>

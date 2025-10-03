@@ -15,7 +15,9 @@
                     <a href="/envelopes"><h1>BudgElope</h1></a>
                 </div>
 
-                <button id="add-envelope" onclick="handler(false)">
+                <button
+                    id="add-envelope"
+                    onclick="enableForm('new-envelope-form')">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="75"
@@ -27,26 +29,21 @@
                 </button>
             </nav>
         </header>
-        <form id="new-envelope-form" action="/envelopes" method="POST" hidden style="display: none;" inert>
+        <form
+            id="new-envelope-form"
+            action="/envelopes"
+            method="POST"
+            hidden
+            style="display: none"
+            inert>
             <p>Create New Envelope</p>
             <label for="title">Title: </label>
             <input type="text" name="title" id="title" required />
             <label for="budget">Budget: </label>
             <input type="number" name="budget" id="budget" min="0" required />
-            <button type="submit" onclick="handler()">Create</button>
+            <button type="submit" onclick="enableForm('new-envelope-form')">
+                Create
+            </button>
         </form>
-        <script>
-            function handler() {
-                const newEnvelopeForm =
-                    document.getElementById("new-envelope-form");
-                const value = newEnvelopeForm.toggleAttribute("hidden");
+      
 
-                if (value) {
-                    newEnvelopeForm.style.display = "none";
-                    newEnvelopeForm.setAttribute("inert", "");
-                } else {
-                    newEnvelopeForm.style.display = "flex";
-                    newEnvelopeForm.removeAttribute("inert");
-                }
-            }
-        </script>

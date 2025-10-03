@@ -1,64 +1,159 @@
 <%- include('partials/header') %>
 <main>
     <section id="all-envelopes">
-        <ul>
-            <% if(locals.data.length > 0) { %> <% for (let i = 0; i <
-            data.length; i++ ){ %>
-            <li>
-                <div class="envelope">
-                    <div class="data-fields">
-                        <p class="env-title"><%= data[i].title %></p>
-                        <p class="env-budget"><%= data[i].budget %></p>
-                    </div>
-                    <div class="env-btns">
-                        <a class="transfer-btn" href="#">
-                            <svg
-                                width="35"
-                                height="35"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill-rule="evenodd"
-                                clip-rule="evenodd">
-                                <path
-                                    d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12-12-5.377-12-12 5.377-12 12-12zm0 2c5.519 0 10 4.481 10 10s-4.481 10-10 10-10-4.481-10-10 4.481-10 10-10zm2 12v-3l5 4-5 4v-3h-9v-2h9zm-4-6v-3l-5 4 5 4v-3h9v-2h-9z" />
-                            </svg>
-                        </a>
-                        <a class="edit-btn" href="#"
-                            ><svg
-                                clip-rule="evenodd"
-                                fill-rule="evenodd"
-                                stroke-linejoin="round"
-                                stroke-miterlimit="2"
-                                viewBox="0 0 24 24"
-                                width="35"
-                                height="35"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="m14.776 18.689 7.012-7.012c.133-.133.217-.329.217-.532 0-.179-.065-.363-.218-.515l-2.423-2.415c-.144-.143-.333-.215-.522-.215s-.378.072-.523.215l-7.027 6.996c-.442 1.371-1.158 3.586-1.265 3.952-.125.433.199.834.573.834.41 0 .696-.099 4.176-1.308zm-2.258-2.392 1.17 1.171c-.704.232-1.275.418-1.729.566zm.968-1.154 5.356-5.331 1.347 1.342-5.346 5.347zm-4.486-1.393c0-.402-.356-.75-.75-.75-2.561 0-2.939 0-5.5 0-.394 0-.75.348-.75.75s.356.75.75.75h5.5c.394 0 .75-.348.75-.75zm5-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75z"
-                                    fill-rule="nonzero" />
-                            </svg>
-                        </a>
-                        <form
-                            action="/envelopes/<%=data[i].id %>"
-                            method="POST">
-                            <input
-                                type="hidden"
-                                name="_method"
-                                value="DELETE" />
+        <ul class="grid-container">
+            <% if(locals.data.length > 0) { %> 
+                <% for (let i = 0; i < data.length; i++ ){ %>
+                  
+            <li class="grid-item">
+                <div class="envelope-container-<%=data[i].id%>">
+                    <div class="envelope">
+                        <div class="data-fields">
+                            <p class="env-title title-<%=data[i].id%>">
+                                <%= data[i].title %>
+                            </p>
+                            <p class="env-budget budget-<%=data[i].id%>">
+                                <%= data[i].budget %>
+                            </p>
+                            <form
+                                class="hidden"
+                                id="transfer-form-<%=data[i].id%>"
+                                method="POST"
+                                action="/envelopes/transfer"
+                                hidden
+                                inert>
+                                <div class="header-div">
+                                    <p>Inter-Envelope Transfer</p>
+                                    <button
+                                        type="button"
+                                        onclick="toggleTransferForm('<%=data[i].id%>')">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5 15.538l-3.592-3.548 3.546-3.587-1.416-1.403-3.545 3.589-3.588-3.543-1.405 1.405 3.593 3.552-3.547 3.592 1.405 1.405 3.555-3.596 3.591 3.55 1.403-1.416z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <label for="title">Title: </label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    id="title"
+                                    required />
+                                <label for="amount">Amount: </label>
+                                <input
+                                    type="number"
+                                    name="amount"
+                                    id="amount"
+                                    min="0"
+                                    required />
+                                <label for="withdrawId">From:</label>
+                                <select
+                                    id="withdrawId"
+                                    name="withdrawId">
+                                   <option value=<%= parseInt(data[i].id) %>><%= data[i].title %></option>
+                                </select>
+                                <label for="transferId">To:</label>
+                                <select
+                                    id="transferId"
+                                    name="transferId"
+                                    required >
+                                    <% for(let i = 0; i < data.length; i++) { %>
+                                    <option value="<%= parseInt(data[i].id) %>">
+                                        <%= data[i].title %>
+                                    </option>
+                                    <%}%>
+                                </select>
+                                <button type="submit" class="form-transfer-btn" >
+                                    Transfer
+                                </button>
+                            </form>
+                            <form
+                                class="hidden"
+                                id="edit-form-<%=data[i].id%>"
+                                method="POST"
+                                action="/envelopes/<%=data[i].id%>"
+                                hidden
+                                inert>
+                                <div class="header-div">
+                                    <p>Edit Envelope</p>
+                                    <button
+                                        type="button"
+                                        onclick="toggleEditForm('<%=data[i].id%>')">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5 15.538l-3.592-3.548 3.546-3.587-1.416-1.403-3.545 3.589-3.588-3.543-1.405 1.405 3.593 3.552-3.547 3.592 1.405 1.405 3.555-3.596 3.591 3.55 1.403-1.416z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <label for="title">Title:</label>
+                                <input type="text" id="title" name="title" value="<%= data[i].title %>" required>
+                                <label for="title">Budget:</label>
+                                <input id="budget", name="budget" type="number" value="<%= data[i].budget%>" required min="0">
+                                <button type="submit" class="form-edit-btn" >
+                                    Update
+                                </button>
+                            </form>
+                        </div>
+                        <div class="env-btns btn-row-<%=data[i].id%>">
                             <button
-                                class="del-btn"
-                                type="submit"
-                                name="deleteItemId">
+                                class="transfer-btn"
+                                onclick="toggleTransferForm('<%=data[i].id%>')">
                                 <svg
-                                    xmlns="http://www.w3.org/2000/svg"
                                     width="35"
                                     height="35"
-                                    viewBox="0 0 24 24">
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill-rule="evenodd"
+                                    clip-rule="evenodd">
                                     <path
-                                        d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5 15.538l-3.592-3.548 3.546-3.587-1.416-1.403-3.545 3.589-3.588-3.543-1.405 1.405 3.593 3.552-3.547 3.592 1.405 1.405 3.555-3.596 3.591 3.55 1.403-1.416z" />
+                                        d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12-12-5.377-12-12 5.377-12 12-12zm0 2c5.519 0 10 4.481 10 10s-4.481 10-10 10-10-4.481-10-10 4.481-10 10-10zm2 12v-3l5 4-5 4v-3h-9v-2h9zm-4-6v-3l-5 4 5 4v-3h9v-2h-9z" />
                                 </svg>
                             </button>
-                        </form>
+                            <button class="edit-btn" onclick="toggleEditForm('<%=data[i].id%>')"
+                                ><svg
+                                    clip-rule="evenodd"
+                                    fill-rule="evenodd"
+                                    stroke-linejoin="round"
+                                    stroke-miterlimit="2"
+                                    viewBox="0 0 24 24"
+                                    width="35"
+                                    height="35"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="m14.776 18.689 7.012-7.012c.133-.133.217-.329.217-.532 0-.179-.065-.363-.218-.515l-2.423-2.415c-.144-.143-.333-.215-.522-.215s-.378.072-.523.215l-7.027 6.996c-.442 1.371-1.158 3.586-1.265 3.952-.125.433.199.834.573.834.41 0 .696-.099 4.176-1.308zm-2.258-2.392 1.17 1.171c-.704.232-1.275.418-1.729.566zm.968-1.154 5.356-5.331 1.347 1.342-5.346 5.347zm-4.486-1.393c0-.402-.356-.75-.75-.75-2.561 0-2.939 0-5.5 0-.394 0-.75.348-.75.75s.356.75.75.75h5.5c.394 0 .75-.348.75-.75zm5-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75zm0-3c0-.402-.356-.75-.75-.75-2.561 0-7.939 0-10.5 0-.394 0-.75.348-.75.75s.356.75.75.75h10.5c.394 0 .75-.348.75-.75z"
+                                        fill-rule="nonzero" />
+                                </svg>
+                            </button>
+                            <form
+                                action="/envelopes/<%=data[i].id %>"
+                                method="POST">
+                                <input
+                                    type="hidden"
+                                    name="_method"
+                                    value="DELETE" />
+                                <button
+                                    class="del-btn"
+                                    type="submit"
+                                    name="deleteItemId">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="35"
+                                        height="35"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5 15.538l-3.592-3.548 3.546-3.587-1.416-1.403-3.545 3.589-3.588-3.543-1.405 1.405 3.593 3.552-3.547 3.592 1.405 1.405 3.555-3.596 3.591 3.55 1.403-1.416z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </li>
@@ -68,4 +163,55 @@
         </ul>
     </section>
 </main>
+
+<script>
+    // function getTransferId(formId){
+    //     const transferForm = document.getElementById("transfer-form-" + formId);
+    //     const transferOptionID = transferForm['transferId'].value;
+    //     return transferOptionID;
+    // }
+
+    function toggleTransferForm(id) {
+        const transferForm = document.getElementById("transfer-form-" + id);
+        const envelopeTitle = document.querySelector(".title-" + id);
+        const envelopebudget = document.querySelector(".budget-" + id);
+        const buttonRow = document.querySelector(".btn-row-" + id);
+
+        // const toggleForm = transferForm.toggleAttribute("hidden");
+        const toggle = transferForm.classList.toggle("hidden");
+
+        if (toggle) {
+            transferForm.setAttribute("inert", true);
+            envelopeTitle.style.display = "block";
+            envelopebudget.style.display = "block";
+            buttonRow.style.display = "flex";
+        } else {
+            buttonRow.style.display = "none";
+            transferForm.removeAttribute("inert");
+            envelopeTitle.style.display = "none";
+            envelopebudget.style.display = "none";
+        }
+    }
+
+    function toggleEditForm(id) {
+        const editForm = document.getElementById("edit-form-" + id);
+        const envelopeTitle = document.querySelector(".title-" + id);
+        const envelopebudget = document.querySelector(".budget-" + id);
+        const buttonRow = document.querySelector(".btn-row-" + id);
+
+        const toggle = editForm.classList.toggle("hidden");
+
+        if (toggle) {
+            editForm.setAttribute("inert", true);
+            envelopeTitle.style.display = "block";
+            envelopebudget.style.display = "block";
+            buttonRow.style.display = "flex";
+        } else {
+            buttonRow.style.display = "none";
+            editForm.removeAttribute("inert");
+            envelopeTitle.style.display = "none";
+            envelopebudget.style.display = "none";
+        }
+    }
+</script>
 <%- include('partials/footer') %>

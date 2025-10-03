@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=McLaren&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Bungee&display=swap");
 
 :root {
@@ -17,14 +15,6 @@
     padding: 0;
     margin: 0;
 
-    /* font-family: "McLaren", sans-serif;
-    font-weight: 400;
-    font-style: normal; */
-
-    /* font-family: "Fragment Mono", monospace;
-    font-weight: 400;
-    font-style: normal; */
-
     font-family: "Bungee", sans-serif;
     font-weight: 400;
     font-style: normal;
@@ -33,7 +23,6 @@
 html {
     background-color: var(--background);
     color: var(--text-strong);
-    /* background-image: url("/images/paper-1-less50.png"); */
 }
 
 form button {
@@ -131,6 +120,7 @@ header {
         width: 150px;
         background-color: var(--stroke-strong);
     }
+
     button:hover {
         opacity: 0.7;
         cursor: pointer;
@@ -144,10 +134,10 @@ header {
     overflow-y: auto;
     padding: 1rem;
 
-    ul {
+    /* ul {
         display: flex;
         gap: 2rem;
-    }
+    } */
 
     ul li {
         text-decoration: none;
@@ -155,8 +145,15 @@ header {
     }
 }
 
+.grid-container {
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
+    gap: 1rem;
+}
+
 .envelope {
-    width: 325px;
+    /* width: 325px; */
     height: 250px;
     background-color: var(--fill);
     border: 1px solid var(--stroke-weak);
@@ -182,6 +179,47 @@ header {
             color: var(--text-weak);
             font-size: 5rem;
         }
+
+        form.hidden {
+            display: none;
+        }
+
+        form {
+            display: flex;
+            justify-content: space-evenly;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            margin-bottom: auto;
+
+            button[type="submit"] {
+                width: 100%;
+                background-color: var(--stroke-strong);
+            }
+
+            button[type="submit"]:hover {
+                cursor: pointer;
+                opacity: 0.5;
+            }
+
+            .header-div {
+                display: flex;
+                justify-content: space-between;
+
+                button {
+                    height: 30px;
+
+                    outline: none;
+                    border: none;
+                    background-color: transparent;
+                }
+
+                button:hover {
+                    cursor: pointer;
+                    opacity: 0.5;
+                }
+            }
+        }
     }
 
     .env-btns {
@@ -191,6 +229,12 @@ header {
         margin-top: auto;
         justify-content: space-between;
         place-items: flex-end;
+
+        .transfer-btn, .edit-btn {
+            background-color: transparent;
+            outline: none;
+            border: none;
+        }
 
         .edit-btn,
         .transfer-btn,
