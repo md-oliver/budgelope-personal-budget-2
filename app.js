@@ -6,9 +6,16 @@ import env from "dotenv";
 import { createEnvelope, verifyEnvelopeData } from "./server/data.js";
 import methodOverride from "method-override";
 import cors from "cors";
+import { dirname } from "path";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 env.config();
@@ -22,7 +29,7 @@ const db = new pg.Pool({
 });
 
 app.use(cors());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 // Body parsing middleware for json data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,8 +47,8 @@ app.use(
 );
 
 const notValidId = (id) => {
-    return (isNaN(parseInt(id)) && !isFinite(id));
-}
+    return isNaN(parseInt(id)) && !isFinite(id);
+};
 
 // New route middleware for simplification
 app.use("/envelopes", envelopeRouter);
@@ -163,7 +170,7 @@ envelopeRouter.post("/transfer", getTransferIds, async (req, res, next) => {
 
     try {
         const selectQuery = "SELECT * FROM envelopes WHERE id = $1;";
-        
+
         if (req.withdrawId === req.transferId) {
             return res.status(400).send({
                 status: "Failed",
@@ -213,13 +220,12 @@ envelopeRouter.post("/transfer", getTransferIds, async (req, res, next) => {
                 req.transferId,
             ]);
 
-            await db.query(updateQuery, [withdrawelBudget,req.withdrawId]);
-            await db.query(updateQuery, [transferBudget,req.transferId]);
+            await db.query(updateQuery, [withdrawelBudget, req.withdrawId]);
+            await db.query(updateQuery, [transferBudget, req.transferId]);
 
             await db.query("COMMIT");
 
             res.status(200).redirect("/envelopes");
-            
         } else {
             return res.status(500).send({
                 status: "Failed",
@@ -257,7 +263,6 @@ envelopeRouter.post("/", async (req, res, next) => {
     }
 });
 
-
 // Post route for specific envelope by ID, updating the whole envelope
 envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
     const { title, budget } = req.body;
@@ -287,7 +292,7 @@ envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
             ]);
 
             if (updateResult.rowCount > 0) {
-                res.status(200).redirect('/envelopes');
+                res.status(200).redirect("/envelopes");
             }
         }
     } catch (err) {
@@ -297,43 +302,6 @@ envelopeRouter.post("/:id", normalizeID, async (req, res, next) => {
         });
     }
 });
-
-// Transfer route, requires an id of a source envelope id (fromId), and a destination envelope Id (toId)
-// envelopeRouter.post("/:fromId/:toId", (req, res, next) => {
-//     const transfer = req.body;
-//     const sourceEnvelope = getEnvelopeById(Number(req.params.fromId));
-//     const destinationEnvelope = getEnvelopeById(Number(req.params.toId));
-
-//     if ((sourceEnvelope !== null) & (destinationEnvelope !== null)) {
-//         if (sourceEnvelope === destinationEnvelope)
-//             res.status(400).send(
-//                 "Cannot make a transfer to the same as the destination"
-//             );
-
-//         if (transfer && sourceEnvelope.budget >= transfer.amount) {
-//             if (
-//                 !isNaN(parseFloat(transfer.amount)) &&
-//                 isFinite(transfer.amount)
-//             ) {
-//                 sourceEnvelope.budget -= Number(transfer.amount);
-//                 destinationEnvelope.budget += Number(transfer.amount);
-//                 res.status(200).send({
-//                     withdrawal: sourceEnvelope,
-//                     transfer: destinationEnvelope,
-//                 });
-//             } else {
-//                 res.status(400).send("Transfer amount must be a number type");
-//             }
-//         } else {
-//             res.status(400).send("Bad data, unable to make this transaction");
-//         }
-//     } else {
-//         res.status(404).send("Can't find the requested envelope/s");
-//     }
-// });
-
-// Transfer route, requires an id of a source envelope id (fromId), and a destination envelope Id (toId)
-
 
 // Remove route for removing a specific envelope by id
 envelopeRouter.delete("/:id", normalizeID, async (req, res, next) => {
