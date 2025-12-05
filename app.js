@@ -87,11 +87,12 @@ const getTransferIds = (req, res, next) => {
 
 // Get all transactions:
 app.get("/transactions", async (req, res, next) => {
-    const query = "SELECT * FROM transactions;";
+    const query =
+        "SELECT t.id, t.title, t.amount, t.date, env.title as envelope, t.type FROM transactions t JOIN envelopes env ON env.id = t.envelope_id ";
     try {
         const result = await db.query(query);
 
-        res.status(200).send({
+        res.status(200).render("transactions.ejs", {
             status: "Success",
             message: "Transactions received",
             data: result.rows,
@@ -203,7 +204,7 @@ envelopeRouter.post("/transfer", getTransferIds, async (req, res, next) => {
             transferBudget += transactionAmount;
 
             const transactionQuery =
-                "INSERT INTO transactions(title, amount, date, envelope_id)VALUES($1, $2, $3, $4) RETURNING *";
+                "INSERT INTO transactions(title, amount, date, envelope_id, type)VALUES($1, $2, $3, $4, $5) RETURNING *";
             const updateQuery =
                 "UPDATE envelopes SET budget = $1 WHERE id = $2 RETURNING *";
 
@@ -212,12 +213,14 @@ envelopeRouter.post("/transfer", getTransferIds, async (req, res, next) => {
                 transactionAmount,
                 date,
                 req.withdrawId,
+                "debit"
             ]);
             await db.query(transactionQuery, [
                 title,
                 transactionAmount,
                 date,
                 req.transferId,
+                "credit"
             ]);
 
             await db.query(updateQuery, [withdrawelBudget, req.withdrawId]);
