@@ -1,0 +1,57 @@
+<%- include('partials/header') %>
+<main>
+    <section id="all-transactions">
+        <div class="grid-container">
+            <div id="table-data">
+                <table>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Title</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Envelope</th>
+                        <th>Type</th>
+                    </tr>
+                    <% if(locals.data.length) { %>
+                    <% for (let i = 0; i < data.length; i++ ){ %>
+                    <tr>
+                        <td>
+                            <%=data[i].id%>
+                        </td>
+                        <td>
+                            <%=data[i].title%>
+                        </td>
+                        <td>
+                            <%=data[i].amount%>
+                        </td>
+                        <td>
+                            <%=data[i].date.toLocaleDateString()%>
+                        </td>
+                        <td>
+                            <%=data[i].envelope%>
+                        </td>
+                        <td>
+                            <%=data[i].type%>
+                        </td>
+                    </tr>
+                    <%  } } else {%>
+                    <tr>
+                        <td>No data</td>
+                        <td>No data</td>
+                        <td>No data</td>
+                        <td>No data</td>
+                        <td>No data</td>
+                        <td>No data</td>
+                    </tr>
+                    <% }%>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>
+
+
+<!-- "data":
+ [{"id":5,"title":"Food","amount":"150","date":"2025-12-04T22:00:00.000Z","envelope_id":8},
+ {"id":6,"title":"Food","amount":"150","date":"2025-12-04T22:00:00.000Z","envelope_id":7}]} -->
