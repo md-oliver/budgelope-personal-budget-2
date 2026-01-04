@@ -312,11 +312,10 @@ footer {
     color: var(--stroke-strong);
 }
 
-@media screen and (min-width: 400px) {
+@media screen and (max-width: 600px) {
     header {
         height: 30vh;
         padding: 1rem;
-        border-bottom: 1px solid var(--stroke-weak);
 
         nav {
             height: 100%;
@@ -325,13 +324,9 @@ footer {
             place-items: center;
             place-content: center;
             text-align: center;
-            /* justify-content: space-between; */
 
             .btn {
-                color: var(--fill);
                 height: 50%;
-                place-items: center;
-                display: flex;
 
                 a {
                     padding: 1rem;
@@ -341,7 +336,6 @@ footer {
 
             h1 {
                 font-size: 2.5rem;
-                color: var(--brand-col);
                 height: 100%;
                 padding: 0;
                 text-align: center;
