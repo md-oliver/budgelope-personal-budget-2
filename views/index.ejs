@@ -165,11 +165,6 @@
 </main>
 
 <script>
-    // function getTransferId(formId){
-    //     const transferForm = document.getElementById("transfer-form-" + formId);
-    //     const transferOptionID = transferForm['transferId'].value;
-    //     return transferOptionID;
-    // }
 
     function toggleTransferForm(id) {
         const transferForm = document.getElementById("transfer-form-" + id);
@@ -177,7 +172,6 @@
         const envelopebudget = document.querySelector(".budget-" + id);
         const buttonRow = document.querySelector(".btn-row-" + id);
 
-        // const toggleForm = transferForm.toggleAttribute("hidden");
         const toggle = transferForm.classList.toggle("hidden");
 
         if (toggle) {
