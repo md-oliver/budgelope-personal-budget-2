@@ -2,7 +2,7 @@ import envelopeRouter from "./routes/envelopeRoutes.js";
 import transactionRouter from "./routes/transactionRouter.js";
 import methodOverride from "method-override";
 import express from "express";
-import { env } from "dotenv";
+import env from "dotenv";
 import cors from "cors";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";

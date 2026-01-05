@@ -34,3 +34,4 @@ yarn.lock
 # Temporary files
 tmp/
 *.tmp
+config.bat
