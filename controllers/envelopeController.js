@@ -118,7 +118,6 @@ export const deleteById = async (req, res, next) => {
             error: err.message,
         });
     }
-    console.log(allCredits);
 
     try {
         const sess = await mongoose.startSession();
