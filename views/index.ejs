@@ -50,22 +50,25 @@
                                     id="amount"
                                     min="0"
                                     required />
-                                <label for="withdrawId">From:</label>
+                                <!-- select label hidden as this is the from id -->
                                 <select
+                                    hidden
                                     id="withdrawId"
                                     name="withdrawId">
-                                   <option value=<%= parseInt(data[i].id) %>><%= data[i].title %></option>
+                                   <option value=<%=data[i].id%>><%= data[i].title %></option>
                                 </select>
                                 <label for="transferId">To:</label>
                                 <select
                                     id="transferId"
                                     name="transferId"
                                     required >
+                                    <% const curId = data[i].id %>
                                     <% for(let i = 0; i < data.length; i++) { %>
-                                    <option value="<%= parseInt(data[i].id) %>">
+                                    <% if(data[i].id !== curId)  { %>
+                                    <option value="<%= data[i].id%>">
                                         <%= data[i].title %>
                                     </option>
-                                    <%}%>
+                                    <%}}%>
                                 </select>
                                 <button type="submit" class="form-transfer-btn" >
                                     Transfer
@@ -133,7 +136,7 @@
                                 </svg>
                             </button>
                             <form
-                                action="/envelopes/<%=data[i].id %>"
+                                action="/envelopes/<%=data[i].id%>"
                                 method="POST">
                                 <input
                                     type="hidden"
