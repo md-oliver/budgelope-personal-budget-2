@@ -2,7 +2,7 @@ import envelopeRouter from "./routes/envelopeRoutes.js";
 import transactionRouter from "./routes/transactionRouter.js";
 import methodOverride from "method-override";
 import express from "express";
-import dotenv from "dotenv";
+import { env } from "dotenv";
 import cors from "cors";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-dotenv.config();
+env.config();
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
