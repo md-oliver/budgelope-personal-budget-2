@@ -1,0 +1,44 @@
+import mongoose, { Schema } from "mongoose";
+
+const transactionSchema = new Schema({
+    amount: {
+        type: Number,
+        required: true,
+    },
+    reference: {
+        type: String,
+        required: true,
+    },
+    date: {
+        type: Date,
+        required: true,
+    },
+    from: {
+        type: Object,
+        required: true,
+    },
+    to: {
+        type: Object,
+        required: true,
+    },
+});
+
+export default mongoose.model("Transaction", transactionSchema);
+
+// {
+//     "withdrawal": {
+//     "id": 2,
+//     "title": "hobbies",
+//     "budget": 500
+//     },
+//     "transfer": {
+//     "id": 1,
+//     "title": "groceries",
+//     "budget": 1750
+// }
+
+// amount,
+// reference,
+// date,
+// from,
+// to
