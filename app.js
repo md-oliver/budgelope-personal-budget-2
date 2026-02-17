@@ -33,11 +33,11 @@ app.use(
             delete req.body._method;
             return method;
         }
-    })
+    }),
 );
 
 // New route middleware for simplification
-app.use("/envelopes", envelopeRouter);
+app.use("/", envelopeRouter);
 app.use("/transactions", transactionRouter);
 
 mongoose

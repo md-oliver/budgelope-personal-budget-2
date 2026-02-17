@@ -19,7 +19,7 @@
                                 class="hidden"
                                 id="transfer-form-<%=data[i].id%>"
                                 method="POST"
-                                action="/envelopes/transfer"
+                                action="/transfer"
                                 hidden
                                 inert>
                                 <div class="header-div">
@@ -78,7 +78,7 @@
                                 class="hidden"
                                 id="edit-form-<%=data[i].id%>"
                                 method="POST"
-                                action="/envelopes/<%=data[i].id%>"
+                                action="/<%=data[i].id%>"
                                 hidden
                                 inert>
                                 <div class="header-div">
@@ -136,7 +136,7 @@
                                 </svg>
                             </button>
                             <form
-                                action="/envelopes/<%=data[i].id%>"
+                                action="/<%=data[i].id%>"
                                 method="POST">
                                 <input
                                     type="hidden"

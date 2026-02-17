@@ -92,7 +92,7 @@ export const createNewEnvelope = async (req, res, next) => {
         return next(err);
     }
 
-    res.status(201).redirect("/envelopes");
+    res.status(201).redirect("/");
 };
 
 export const deleteById = async (req, res, next) => {
@@ -132,7 +132,7 @@ export const deleteById = async (req, res, next) => {
         return next(err);
     }
 
-    res.status(204).redirect("/envelopes");
+    res.status(204).redirect("/");
 };
 
 export const updateEnvelopeById = async (req, res, next) => {
@@ -170,7 +170,7 @@ export const updateEnvelopeById = async (req, res, next) => {
         return next(err);
     }
 
-    res.status(200).redirect("/envelopes");
+    res.status(200).redirect("/");
 };
 
 export const createTransferTransaction = async (req, res, next) => {
@@ -200,8 +200,8 @@ export const createTransferTransaction = async (req, res, next) => {
         return next(
             new HTTPError(
                 "Unable to find any envleopes with the provided ID's",
-                404
-            )
+                404,
+            ),
         );
     }
 
@@ -239,8 +239,8 @@ export const createTransferTransaction = async (req, res, next) => {
                 new HTTPError(
                     error.message ||
                         "Transfer could not complete, please try again later",
-                    error.code || 500
-                )
+                    error.code || 500,
+                ),
             );
         }
     } else {
@@ -250,5 +250,5 @@ export const createTransferTransaction = async (req, res, next) => {
         });
     }
 
-    res.status(200).redirect("/envelopes");
+    res.status(200).redirect("/");
 };
