@@ -3,7 +3,6 @@ import transactionRouter from "./routes/transactionRouter.js";
 import methodOverride from "method-override";
 import express from "express";
 import env from "dotenv";
-import cors from "cors";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
@@ -18,7 +17,6 @@ app.set("view engine", "ejs");
 
 env.config();
 
-app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 // Body parsing middleware for json data
 app.use(express.json());
