@@ -1,21 +1,20 @@
 {
     "dependencies": {
-        "cors": "^2.8.5",
-        "dotenv": "^17.2.3",
-        "ejs": "^3.1.10",
+        "dotenv": "^17.3.1",
+        "ejs": "^4.0.1",
         "express": "^5.2.1",
         "method-override": "^3.0.0",
-        "mongoose": "^9.1.1"
+        "mongoose": "^9.2.1"
     },
     "name": "budgelope",
     "version": "1.0.0",
     "description": "",
     "main": "app.js",
+    "type": "module",
     "scripts": {
         "start": "nodemon app.js"
     },
     "keywords": [],
     "author": "Marc Oliver",
-    "license": "ISC",
-    "type": "module"
+    "license": "ISC"
 }
