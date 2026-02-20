@@ -11,10 +11,7 @@ An application for creating and managing a personal budget, based on the Envelop
 - [Env Variables](#Env-Variables)
 - [Application Link](#Application-Link)
 - [Run](#Run)
-- [Bugs:Render URL](#Bugs:Render-URL)
-- [Features](#features)
-- [Features](#features)
-- [Features](#features)
+- [Bugs-Render URL](#Bugs-Render-URL)
 
 ## Features
 
@@ -50,6 +47,6 @@ npm start
 
 ```
 
-## Bugs:Render URL
+## Bugs-Render URL:
 
 Sometimes the Render Url fails. It is hosted on the free tier, and I have not been able to replicate the issue, however I have cleaned the code and fixed the error. Please try the url again in a few minutes. I am looking into this.
