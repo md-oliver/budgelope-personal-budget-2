@@ -1,5 +1,4 @@
 import { Router } from "express";
-const envelopeRouter = Router();
 import {
     getAllEnvelopes,
     createNewEnvelope,
@@ -8,21 +7,7 @@ import {
     createTransferTransaction,
 } from "../controllers/envelopeController.js";
 
-// ID Normalize middleware
-// TODO: VALIDATE MIDDLEWARE
-// const normalizeID = (req, res, next) => {
-//     const envelopeId = Number(req.params.id);
-//     if (notValidId(envelopeId)) {
-//         res.status(400).send({
-//             status: "Failed",
-//             message: "Bad request. Unable to find matching ID",
-//             data: null,
-//         });
-//     } else {
-//         req.envelopeId = envelopeId;
-//         next();
-//     }
-// };
+const envelopeRouter = Router();
 
 // Default envelope route
 envelopeRouter.get("/", getAllEnvelopes);

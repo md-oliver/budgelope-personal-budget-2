@@ -101,13 +101,6 @@ export const deleteById = async (req, res, next) => {
     let requestedEnvelope;
     try {
         requestedEnvelope = await Envelope.findById(envelopeId);
-        // if (getResult.rowCount < 1) {
-        //     return res.status(404).send({
-        //         status: "Failed",
-        //         message: "No records found with matching ID",
-        //         data: null,
-        //     });
-        // }
     } catch (err) {
         return next(err);
     }
@@ -125,10 +118,6 @@ export const deleteById = async (req, res, next) => {
         await requestedEnvelope.deleteOne({ session: sess });
         await sess.commitTransaction();
     } catch (err) {
-        // const error = new HTTPError(
-        //     err.message || "Something went wrong, could not delete place",
-        //     err.code || 500
-        // );
         return next(err);
     }
 

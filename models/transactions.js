@@ -24,21 +24,3 @@ const transactionSchema = new Schema({
 });
 
 export default mongoose.model("Transaction", transactionSchema);
-
-// {
-//     "withdrawal": {
-//     "id": 2,
-//     "title": "hobbies",
-//     "budget": 500
-//     },
-//     "transfer": {
-//     "id": 1,
-//     "title": "groceries",
-//     "budget": 1750
-// }
-
-// amount,
-// reference,
-// date,
-// from,
-// to
