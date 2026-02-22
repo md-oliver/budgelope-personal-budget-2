@@ -1,4 +1,4 @@
-import envelopeRouter from "./routes/envelopeRoutes.js";
+import envelopeRouter from "./routes/envelopeRouter.js";
 import transactionRouter from "./routes/transactionRouter.js";
 import methodOverride from "method-override";
 import express from "express";
